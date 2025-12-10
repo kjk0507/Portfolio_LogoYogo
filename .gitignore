@@ -380,6 +380,7 @@ gradle-app.setting
 *.hprof
 
 # etc
-src/test/
+LoGoYoGo/src/test/
+LoGoYoGo/src/main/resources/property
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,git,java,maven,eclipse,intellij,gradle,netbeans,visualstudiocode
