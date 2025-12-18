@@ -1,5 +1,5 @@
 
-alert("home.js 실행됨");
+// alert("home.js 실행됨");
 
 
 /*
@@ -17,9 +17,21 @@ $.ajax({
         id: "test"
     },
     success: function (res) {
-        console.log("요청 성공");
+        console.log("요청 성공", res);
     },
     error: function (err) {
         console.log("요청 실패", err);
     }
+});
+
+
+fetch(ctx + '/getDiagramSvgs')
+	.then(res => res.json())
+	.then(svgs => {
+		svgs.forEach(path => {
+		    var img = document.createElement('img');
+		    img.src = path;
+		    img.style.width = '50px';
+		    document.getElementById('imgList').appendChild(img);
+	  	});
 });

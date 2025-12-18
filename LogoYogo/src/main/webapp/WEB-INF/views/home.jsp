@@ -13,6 +13,9 @@
 <P>  The time on the server is ${serverTime}. </P>
 
 <%= application.getMajorVersion() %>.<%= application.getMinorVersion() %>
+
+<div id="imgList"></div>
+
 <script>
     var ctx = "${pageContext.request.contextPath}";
     
