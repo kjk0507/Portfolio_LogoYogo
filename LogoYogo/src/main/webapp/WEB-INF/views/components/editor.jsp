@@ -85,6 +85,47 @@
 	width: 100%;
 	padding-bottom: 0.5rem;	
 }
+#palette-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%
+}
+.palette-btn {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    border-radius: 0.6rem;
+    cursor: pointer;
+
+    background: #fff;
+    border: 1px solid #ddd;
+
+    transition:
+        transform 0.1s ease,
+        box-shadow 0.1s ease,
+        background 0.1s ease;
+}
+.palette-btn:hover {
+    background: #f0f2f7;
+    box-shadow: inset 0 0 0 1px #ccc;
+}
+.palette-btn:active {
+    transform: scale(0.97);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+}
+.palette-color {
+    width: 28px;
+    height: 28px;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    pointer-events: none;
+    flex: auto;
+}
+.palette-btn.is-active {
+    outline: 2px solid #4a6cf7;
+    background: #eef2ff;
+}
 #text-input-box,
 #add-text-btn,
 #text-font-box {
@@ -93,6 +134,12 @@
 	border-radius: 0.4rem;
     cursor: pointer;
     border: 1px solid #ccc;
+}
+#text-input-box{
+	margin-bottom: 1rem;
+	cursor: text; 
+	padding-left: 0.8rem; 
+	font-weight:500;
 }
 .shape-container {
     display: flex;
@@ -220,7 +267,12 @@
 					<div class="tab-title">색상 팔레트</div>
 					<div class="tab-description">모든 도형과 텍스트의 색상을 변경합니다.</div>
 				</div>		
-				<div class="tab-content">버튼 1 - 내용 A</div>
+				<div class="tab-content">
+					<div class="tab-content-title">텍스트 상자</div>								
+					<div class="tab-content-description">
+						<div id="palette-container"></div>
+					</div>
+				</div>
 			</div>
 			<div id="editor-tab-text">
 				<div class="tab-header">
@@ -231,7 +283,7 @@
 					<div class="tab-content-title">텍스트 상자</div>								
 					<div class="tab-content-description">
 						<div id="text-input-container">
-							<input id="text-input-box" type="text" value="" style="margin-bottom: 1rem; cursor: text;"/>
+							<input id="text-input-box" type="text" placeholder="내용을 입력하세요."/>
 							<div id="add-text-btn"></div>
 						</div>
 					</div>
@@ -322,4 +374,5 @@
 		</div>
 	</div>
 </div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/views/components/editor.js" defer></script>
