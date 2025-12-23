@@ -9,6 +9,73 @@
 	height: 4.5rem;
 	flex-shrink: 0;
 	border-bottom: #dee0e6 1.5px solid;
+	display: flex;
+    justify-content: flex-end;
+}
+#editor-button {
+    display: flex;
+    font-size: 1.8rem;    
+}
+#editor-button > div {
+    cursor: pointer;
+    border-radius: 0.4rem;
+    user-select: none;
+    border-left: #dee0e6 1.5px solid;
+    text-align: center;
+    line-height: 4rem;
+    width: 12rem;
+    font-weight: 600;
+}
+#editor-button > div.disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+#preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+#preview-modal {
+    background: white;
+    padding: 1rem;
+    position: relative;
+}
+#preview-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: pointer;
+}
+#preview-container {
+	display: flex;
+	gap: 1rem;
+}
+.preview-canvas-container {
+    position: absolute !important;
+    pointer-events: none;
+}
+.preview-bg {
+	flex: auto;
+	height: 40rem;
+	weight: 40rem;
+}
+#preview-canvas1 {
+	top: -177px !important;
+	left: 166px !important;
+	transform: skew(51deg, -31deg) !important;
+}
+#preview-canvas2 {
+	top: -248px !important;
+	left: 161px !important;
+	transform: skew(20deg, -15deg) !important;
+}
+#preview-canvas3 {
+	top: -335px !important;
+	left: 103px !important;
 }
 #editor-content {
 	display: flex;
@@ -22,6 +89,9 @@
 	display: flex;
     justify-content: center;
     align-items: center;
+}
+#baseCanvas{
+	box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
 }
 #editor-tab{
 	width: 28rem;
@@ -252,12 +322,19 @@
     border-bottom: #dee0e6 1.5px solid;
 }
 .hidden{
-	display: none;
+	display: none !important;
 }
 </style>
 <div id="editor">
-	<div id = "editor-header"></div>
-	<div id = "editor-content">
+	<div id="editor-header">
+		<div id="editor-button">
+			<div id="canvas-undo" class="disabled">실행취소</div>
+			<div id="canvas-redo" class="disabled">다시실행</div>
+			<div id="canvas-preview">미리보기</div>
+			<div id="canvas-save">저장하기</div>
+		</div>
+	</div>
+	<div id="editor-content">
 		<div id="editor-canvas">
 			<canvas id="baseCanvas" width="700" height="600"></canvas>
 		</div>
@@ -373,6 +450,26 @@
 		    <div class="tab-btn" data-tab="btn-tap-shape">도형</div>
 		</div>
 	</div>
+</div>
+<!-- modal -->
+<div id="preview-overlay" class="hidden">
+    <div id="preview-modal">
+    	<span id="preview-close" class="hidden">✕</span>
+    	<div id="preview-container">
+    		<div class="preview-contant">
+		    	<img class="preview-bg" src="/resources/images/preview/card.png" />
+		    	<canvas id="preview-canvas1" width="70" height="60"></canvas>
+    		</div>
+    		<div class="preview-contant">
+		    	<img class="preview-bg" src="/resources/images/preview/facebook.png" />
+		    	<canvas id="preview-canvas2" width="70" height="70"></canvas>
+    		</div>
+	    	<div class="preview-contant">
+		    	<img class="preview-bg" src="/resources/images/preview/web-sample.png" />
+		    	<canvas id="preview-canvas3" width="190" height="180"></canvas>
+	    	</div>
+    	</div>
+    </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="${pageContext.request.contextPath}/resources/js/views/components/editor.js" defer></script>

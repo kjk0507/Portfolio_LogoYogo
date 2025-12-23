@@ -111,6 +111,11 @@ canvas.on('selection:cleared', clearCanvaseSelect);
 canvas.on('object:scaling', canvasObjectResize);
 canvas.on('object:modified', canvasObjectResize);
 
+// 히스토리 관련 //
+canvas.on('object:added', saveHistory);
+canvas.on('object:modified', saveHistory);
+canvas.on('object:removed', saveHistory);
+
 function canvaseSelect(e){
 	var obj = e.selected[0];
 
@@ -127,7 +132,7 @@ function canvaseSelect(e){
     }
 	
 	updateSizeEditor(obj);
-	updateColorEditor(obj);	
+	updateColorEditor(obj);
 }
 
 function clearCanvaseSelect(){
@@ -140,6 +145,162 @@ function canvasObjectResize(e) {
     if (!obj) return;
 	updateSizeEditor(obj);
 }
+
+// --------------------------- 에디터 헤더 관련 --------------------------- //
+var undoStack = [];
+var redoStack = [];
+var MAX_HISTORY = 50;
+var isRestoring = false;
+
+// 히스토리 저장
+function saveHistory() {
+	console.log("save:", undoStack.length);
+	console.log("redo stack:", redoStack.length);
+	
+	if (isRestoring) return;
+
+    redoStack = [];
+    undoStack.push(JSON.stringify(canvas.toJSON()));
+
+    if (undoStack.length > MAX_HISTORY) {
+        undoStack.shift();
+    }    
+	
+    updateUndoRedoUI();
+}
+
+// 실행취소
+document.getElementById('canvas-undo').addEventListener('click', () => {
+	console.log("undo:", undoStack.length);
+	
+    if (undoStack.length <= 1) return;
+
+    isRestoring = true;
+
+    redoStack.push(undoStack.pop());
+    var prev = undoStack[undoStack.length - 1];
+
+    canvas.loadFromJSON(prev, () => {
+        canvas.renderAll();
+        isRestoring = false;
+        updateUndoRedoUI();
+    });
+
+});
+
+// 다시실행
+document.getElementById('canvas-redo').addEventListener('click', () => {
+    if (!redoStack.length) return;
+
+    isRestoring = true;
+
+    const next = redoStack.pop();
+    undoStack.push(next);
+
+    canvas.loadFromJSON(next, () => {
+        canvas.renderAll();
+        isRestoring = false;
+        updateUndoRedoUI();
+    });
+});
+
+function updateUndoRedoUI() {
+    toggleDisabled('canvas-undo', undoStack.length <= 1);
+    toggleDisabled('canvas-redo', redoStack.length < 1);
+}
+
+function toggleDisabled(id, disabled) {
+    var el = document.getElementById(id);
+    el.classList.toggle('disabled', disabled);
+}
+
+// 미리보기
+var previewBtn = document.getElementById('canvas-preview');
+var overlay = document.getElementById('preview-overlay');
+var closeBtn = document.getElementById('preview-close');
+
+document.getElementById('canvas-preview').addEventListener('click', openPreview);
+
+function openPreview() {
+    var overlay = document.getElementById('preview-overlay');
+    overlay.classList.remove('hidden');
+
+    var previewCanvas1 = new fabric.Canvas('preview-canvas1', {
+        selection: false
+    });
+	var previewCanvas2 = new fabric.Canvas('preview-canvas2', {
+        selection: false
+    });
+	var previewCanvas3 = new fabric.Canvas('preview-canvas3', {
+        selection: false
+    });
+	
+	previewCanvas1.setWidth(70);
+    previewCanvas1.setHeight(60);	
+	previewCanvas2.setWidth(70);
+    previewCanvas2.setHeight(70);	
+	previewCanvas3.setWidth(190);
+    previewCanvas3.setHeight(180);
+	
+	previewCanvas1.wrapperEl.classList.add('preview-canvas-container');
+	previewCanvas2.wrapperEl.classList.add('preview-canvas-container');
+	previewCanvas3.wrapperEl.classList.add('preview-canvas-container');
+
+	loadPreviewCanvasFit(previewCanvas1, canvas);
+	loadPreviewCanvasFit(previewCanvas2, canvas);
+	loadPreviewCanvasFit(previewCanvas3, canvas);
+}
+
+function loadPreviewCanvasFit(previewCanvas, sourceCanvas) {
+    previewCanvas.loadFromJSON(sourceCanvas.toJSON(), () => {
+        var previewW = previewCanvas.getWidth();
+        var previewH = previewCanvas.getHeight();
+
+        var sourceW = sourceCanvas.getWidth();
+        var sourceH = sourceCanvas.getHeight();
+
+        var zoom = Math.min(
+            previewW / sourceW,
+            previewH / sourceH
+        );
+
+        previewCanvas.setZoom(zoom);
+
+        var contentW = sourceW * zoom;
+        var contentH = sourceH * zoom;
+
+        var panX = (previewW - contentW) / 2;
+        var panY = (previewH - contentH) / 2;
+
+        previewCanvas.absolutePan({
+            x: -panX,
+            y: -panY
+        });
+
+        previewCanvas.requestRenderAll();
+    });
+}
+
+closeBtn.addEventListener('click', () => {
+    overlay.classList.add('hidden');
+});
+
+overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.add('hidden');
+});
+
+// 캔버스 저장
+document.getElementById('canvas-save').addEventListener('click', () => {
+    const dataURL = canvas.toDataURL({
+        format: 'png',
+        quality: 1
+    });
+
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'Logo.png';
+    a.click();
+});
 
 // ---------------------------  에디터 팔레트 버튼 --------------------------- //
 var paletteContainer = document.getElementById('palette-container');
@@ -165,7 +326,7 @@ function renderPalettes() {
         });
 
         container.appendChild(btn);
-    });
+    });	
 }
 
 function applyRandomPaletteColor(palette) {
@@ -182,7 +343,9 @@ function applyRandomPaletteColor(palette) {
         }
     });
 
-    canvas.requestRenderAll();
+    canvas.requestRenderAll();	
+
+	saveHistory();
 }
 
 function setActivePalette(btn) {
@@ -262,6 +425,12 @@ textFontSelect.addEventListener('change', () => {
     canvas.requestRenderAll();
 });
 
+textFontSelect.addEventListener('change', () => {
+    if (!activeText) return;
+
+    saveHistory();
+});
+
 // 에디터 텍스트 굵기 수정 시 캔버스 텍스트 수정
 textWeightSlider.addEventListener('input', () => {
     if (!activeText) return;
@@ -271,6 +440,12 @@ textWeightSlider.addEventListener('input', () => {
 	activeText.set('fontWeight', weight);
 	textWeightValue.textContent = weight;
 	canvas.requestRenderAll();
+});
+
+textWeightSlider.addEventListener('change', () => {
+    if (!activeText) return;
+
+    saveHistory();
 });
 
 // 에디터 텍스트 크기 수정 시 캔버스 텍스트 수정
@@ -289,6 +464,12 @@ textSizeSlider.addEventListener('input', () => {
     canvas.requestRenderAll();
 });
 
+textSizeSlider.addEventListener('change', () => {
+    if (!activeText) return;
+
+    saveHistory();
+});
+
 // 에디터 텍스트 정렬
 textAlineLeft.addEventListener('click', () => {
     setTextAlign('left');
@@ -304,6 +485,8 @@ function setTextAlign(align) {
     if (!activeText) return;
     activeText.set('textAlign', align);
     canvas.requestRenderAll();
+	
+	saveHistory();
 }
 
 textPicker.addEventListener('input', () => {
@@ -312,6 +495,12 @@ textPicker.addEventListener('input', () => {
     activeText.set('fill', textPicker.value);
 
     canvas.requestRenderAll();
+});
+
+textPicker.addEventListener('change', () => {
+    if (!activeText) return;
+
+    saveHistory();
 });
 
 // ---------------------------  에디터 도형 버튼 --------------------------- //
@@ -372,6 +561,12 @@ shapeSizeSlider.addEventListener('input', () => {
     canvas.requestRenderAll();
 });
 
+shapeSizeSlider.addEventListener('change', () => {
+    if (!activeText) return;
+
+    saveHistory();
+});
+
 shapePicker.addEventListener('input', () => {
     if (!activeShape) return;
 
@@ -379,6 +574,13 @@ shapePicker.addEventListener('input', () => {
 
     canvas.requestRenderAll();
 });
+
+shapePicker.addEventListener('change', () => {
+    if (!activeShape) return;
+
+    saveHistory();
+});
+
 
 // 공통 부분
 // 캔버스 도형 수정 시 에디터 도형 크기 수정
@@ -390,7 +592,7 @@ function updateSizeEditor(obj) {
 		
 		textInput.value = obj.text;
 		
-		var font = obj.fontFamily || 'NanumGothic';
+		//var font = obj.fontFamily || 'NanumGothic';
 		
 		textSizeSlider.value = diagonal;
 	    textSizeValue.textContent = diagonal;
@@ -408,7 +610,7 @@ function updateSizeEditor(obj) {
 		shapeSizeSlider.value = diagonal;
 	    shapeSizeValue.textContent = diagonal;
 		
-    }	    
+    }
 }
 
 // 대각선 계산
@@ -465,6 +667,8 @@ document.addEventListener('keydown', (e) => {
 closeTab();
 hideAllTab();
 getDiagramSvgs();
+// 맨 처음 캔버스 값 저장
+saveHistory();
 // 초기 버튼 활성화
 if(!activeTab){
 	var firstBtn = document.querySelector('#editor-tab-button .tab-btn')		
