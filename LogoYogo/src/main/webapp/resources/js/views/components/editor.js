@@ -507,37 +507,37 @@ textPicker.addEventListener('change', () => {
 // 도형 로드
 function getDiagramSvgs(){
 	fetch(ctx + '/getDiagramSvgs')
-	    .then(res => res.json())
-	    .then(svgs => {
-	        svgs.forEach((path, idx) => {
-	            var btn = document.createElement('button');
-	            btn.className = 'svg-btn';
-	            btn.title = 'SVG ' + (idx + 1);
-	
-	            var img = document.createElement('img');
-	            img.src = path;
-	            btn.appendChild(img);
-	
-				var content = document.querySelector('.shape-container');
-	            content.appendChild(btn);
-	
-	            btn.addEventListener('click', () => {
-	                fabric.loadSVGFromURL(path, (objects, options) => {
-	                    var obj = fabric.util.groupSVGElements(objects, options);
-	
-	                    obj.set({
-	                        left: canvas.width / 2 - (obj.width * obj.scaleX) / 2,
-	                        top: canvas.height / 2 - (obj.height * obj.scaleY) / 2,
-	                        selectable: true
-	                    });
-	
-	                    canvas.add(obj);
-	                    canvas.setActiveObject(obj);
-	                    canvas.renderAll();
-	                });
-	            });
-	        });
-	    });	
+    .then(res => res.json())
+    .then(svgs => {
+        svgs.forEach((path, idx) => {
+            var btn = document.createElement('button');
+            btn.className = 'svg-btn';
+            btn.title = 'SVG ' + (idx + 1);
+
+            var img = document.createElement('img');
+            img.src = path;
+            btn.appendChild(img);
+
+			var content = document.querySelector('.shape-container');
+            content.appendChild(btn);
+
+            btn.addEventListener('click', () => {
+                fabric.loadSVGFromURL(path, (objects, options) => {
+                    var obj = fabric.util.groupSVGElements(objects, options);
+
+                    obj.set({
+                        left: canvas.width / 2 - (obj.width * obj.scaleX) / 2,
+                        top: canvas.height / 2 - (obj.height * obj.scaleY) / 2,
+                        selectable: true
+                    });
+
+                    canvas.add(obj);
+                    canvas.setActiveObject(obj);
+                    canvas.renderAll();
+                });
+            });
+        });
+    });	
 }
 
 // 도형 설정
@@ -662,6 +662,91 @@ document.addEventListener('keydown', (e) => {
     canvas.requestRenderAll();
 });
 
+// 세션에 데이터 존재하는지 확일할 함수
+function checkSessionData(){
+	var data = getSelectData();
+	
+	if(!data) return;
+	
+	var text = data.text;
+	var path = data.path;
+	var color = data.color;
+	var pos = data.pos;
+	var shapePosLeft = 0;
+	var shapePosTop = 0;
+	var textPosLeft = 0;
+	var textPosTop = 0;
+	var textAlign = '';
+	
+	if(text == null){
+		text = "텍스트 박스";
+	}
+	
+	switch (pos) {
+	  case "pos0":
+		shapePosLeft = 50;
+		shapePosTop = 0;
+		textPosLeft = -30;
+		textPosTop = 20;
+		textAlign = "left";
+	    break;
+	  case "pos1":
+		shapePosLeft = 0;
+		shapePosTop = 60;
+		textPosLeft = 150;
+		textPosTop = -20;
+		textAlign = "center";
+		break;
+	  case "pos2":
+		shapePosLeft = -80;
+		shapePosTop = 0;
+		textPosLeft = 300;
+		textPosTop = 20;
+		textAlign = "right";
+	    break;	    
+	}	
+	
+	
+	fabric.loadSVGFromURL(path, (objects, options) => {
+        var obj = fabric.util.groupSVGElements(objects, options);
+		
+		obj.scaleX = 0.7;
+		obj.scaleY = 0.7;
+
+        obj.set({
+            left: canvas.width / 2 - (obj.width * obj.scaleX) / 2 - shapePosLeft,
+            top: canvas.height / 2 - (obj.height * obj.scaleY) / 2 - shapePosTop,
+            selectable: true,
+			fill: color,
+        });
+
+        canvas.add(obj);
+        canvas.setActiveObject(obj);
+        canvas.renderAll();
+    });
+	
+	var textbox = new fabric.Textbox(text, {
+		left: 350 - textPosLeft,
+        top: 300 - textPosTop,
+        width: 300,
+        fontFamily: 'NanumGothic',
+        fontSize: 32,
+        fill: color,
+		textAlign: textAlign
+    });
+	
+	canvas.add(textbox);
+    canvas.setActiveObject(textbox);
+    canvas.requestRenderAll();
+	
+	
+	console.log("data = " + text + " | " + path + " | " + color + " | " + pos);
+}
+
+function getSelectData() {
+    return JSON.parse(sessionStorage.getItem('selectData')) || {};
+}
+
 // --------------------------- 초기 실행 --------------------------- //
 // 초기 버튼 비활성화
 closeTab();
@@ -669,6 +754,8 @@ hideAllTab();
 getDiagramSvgs();
 // 맨 처음 캔버스 값 저장
 saveHistory();
+// 세션 확인
+checkSessionData();
 // 초기 버튼 활성화
 if(!activeTab){
 	var firstBtn = document.querySelector('#editor-tab-button .tab-btn')		

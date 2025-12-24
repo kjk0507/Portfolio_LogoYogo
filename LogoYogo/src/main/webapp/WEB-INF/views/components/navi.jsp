@@ -22,6 +22,9 @@
 	<a href="#" data-url="/mainPage.do" class="nav-link">메인</a>
 	<a href="#" data-url="/section1.do" class="nav-link">Section1</a>
 	<a href="#" data-url="/section2.do" class="nav-link">Section2</a>
+	<a href="#" data-url="/selectShape.do" class="nav-link">SelectShape</a>
+	<a href="#" data-url="/selectColor.do" class="nav-link">SelectColor</a>
+	<a href="#" data-url="selectArrange.do" class="nav-link">selectArrange</a>
 	<a href="#" data-url="/editor.do" class="nav-link">editor</a>
 	</span>
 </div>

@@ -87,23 +87,38 @@ public class HomeController {
 	
 	// components 페이지 호출	
 	@RequestMapping("/mainPage.do")
-	public String home(Model model) {
+	public String getPageHome(Model model) {
 	    return "components/mainPage";
 	}
 
 	@RequestMapping("/section1.do")
-	public String section1() {
+	public String getPageSection1() {
 	    return "components/section1";
 	}
 
 	@RequestMapping("/section2.do")
-	public String section2() {
+	public String getPageSection2() {
 	    return "components/section2";
 	}
-
+	
+	@RequestMapping("/selectShape.do")
+	public String getPageSelectShape() {
+	    return "components/selectShape";
+	}
+	
+	@RequestMapping("/selectColor.do")
+	public String getPageSelectColor() {
+	    return "components/selectColor";
+	}
+	
+	@RequestMapping("/selectArrange.do")
+	public String getPageSelcetArrange() {
+	    return "components/selectArrange";
+	}
+	
 	@RequestMapping("/editor.do")
-	public String editor() {
-	    return "components/editor";
+	public String getPageEditor() {
+		return "components/editor";
 	}
 	
 	@RequestMapping("/getDiagramSvgs")
